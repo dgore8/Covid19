@@ -24,5 +24,7 @@ Statistical Analysis (SQL): SQL is used for statistical tests and comparisons.
 * How to Use
 
 Data files are in the "Data" folder.
+
 Run SQL scripts in the "SQL" folder.
+
 Power BI visualizations will be available in the "PowerBI" folder.
