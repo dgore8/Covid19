@@ -104,6 +104,10 @@ GROUP BY date, state, totalsamples, negative, positive
 HAVING COUNT(*) > 1); #Two rows were same as they were duplicate
 
 ## Data Cleaning Documentation: 
-For the tables, data cleaning was conducted. Duplicate records were identified based on multiple columns, and the DELETE query was used to remove them. Additionally, NULL values were replaced with 0 in columns where appropriate. The data format was validated, ensuring consistency and correctness across the dataset.
+For the tables, data cleaning was conducted. Duplicate records were identified based on multiple columns, and the DELETE query was used to remove them. Additionally, NULL values were replaced with 0 
+in columns where appropriate. The data format was validated, ensuring consistency and correctness across the dataset.
+
+
+
 
 
