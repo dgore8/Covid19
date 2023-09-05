@@ -1,0 +1,80 @@
+# Exploratory Data Analysis (EDA) for our COVID19 Dataset
+•	What is the total number of COVID19 cases (confirmed and deaths) reported for the entire dataset?
+	SELECT  SUM(Confirmed) AS TotalConfirmed,
+	SUM(Deaths) AS TotalDeaths
+	FROM   covid_19_india;
+
+•	How many unique states are included in the COVID19 cases dataset, and what are their names?
+	SELECT DISTINCT State AS UniqueStateCount
+	FROM (   SELECT State FROM covid_19_india
+	UNION
+	SELECT State FROM covid_vaccine_statewise
+	UNION
+	SELECT State FROM StatewiseTestingDetails
+	) AS CombinedStates;
+
+•	Calculate the total number of vaccine doses administered across all states.
+ SELECT State,
+SUM(Total_Doses_Administered) AS TotalDosesAdministered
+FROM covid_vaccine_statewise
+GROUP BY State;
+
+•	What is the percentage of individuals vaccinated in the age group 60 and above, on average, across all states? We use case because some rows has 0 in Total_Individuals_Vaccinated.
+	SELECT Round (AVG(
+CASE
+WHEN Total_Individuals_Vaccinated > 0 THEN AgeGroup_60plus_Individuals_Vaccinated * 100.0 / Total_Individuals_Vaccinated
+ ELSE 0.0   Set to 0% if Total_Individuals_Vaccinated is 0
+ END ),2 ) AS AveragePercentageVaccinated
+FROM covid_vaccine_statewise;
+
+
+•	What is the total number of vaccine doses administered in each state according to the covid_vaccine_statewise table, and how does this distribution vary across different states?
+SELECT SUM(Total_Doses_Administered) AS TotalVaccineDoses,
+State FROM
+covid_vaccine_statewise
+GROUP BY State;
+
+•	Calculate and visualize the distribution of vaccination sessions across states. Are there any outliers or unusual patterns?
+SELECT State,
+sum(Sessions) AS VaccinationSessions
+FROM covid_vaccine_statewise
+group by state ;
+
+•	Determine the state with the highest and lowest vaccine coverage in terms of the percentage of individuals vaccinated in the age group 1844.
+WITH VaccinePercentages AS (
+SELECT State, ROUND(
+SUM(AgeGroup_18_44_Individuals_Vaccinated) * 100.0 /
+SUM(Total_Individuals_Vaccinated)
+) AS PercentageVaccinated_18_44 FROM
+covid_vaccine_statewise
+GROUP BY State )
+SELECT State, PercentageVaccinated_18_44
+FROM ( SELECT State, PercentageVaccinated_18_44,
+RANK() OVER (ORDER BY PercentageVaccinated_18_44 DESC) AS HighRank,
+RANK() OVER (ORDER BY PercentageVaccinated_18_44 ASC) AS LowRank
+FROM VaccinePercentages ) AS RankedPercentages
+WHERE HighRank = 1 OR LowRank = 1;
+
+
+•	Calculate the case fatality rate (CFR) for each state. How does it vary across states, and has it changed over time?
+SELECT State, SUM(CFR) AS TotalCFR
+FROM ( SELECT State, Date, (Deaths * 100.0 / Confirmed) AS CFR
+FROM covid_19_india
+WHERE Deaths IS NOT NULL
+AND Confirmed > 0 ) AS CFRData
+GROUP BY State
+ORDER BY State;
+
+•	Investigate the impact of gender on vaccination rates. Are there significant differences between male, female, and transgender individuals' vaccination rates?
+SELECT 'Male' AS Gender,
+SUM(Male_Individuals_Vaccinated) AS TotalVaccinated,
+SUM(Male_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate
+FROM covid_vaccine_statewise
+UNION
+SELECT 'Female' AS Gender,
+SUM(Female_Individuals_Vaccinated) AS TotalVaccinated,
+SUM(Female_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate FROM covid_vaccine_statewise
+UNION
+SELECT 'Transgender' AS Gender,
+SUM(Transgender_Individuals_Vaccinated) AS TotalVaccinated,
+SUM(Transgender_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate FROM covid_vaccine_statewise;
