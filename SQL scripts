@@ -1,50 +1,59 @@
-## First created all 3 table and uploaded with proper data type and constraints.
+# Data Cleaning and Preparation
 
-- CREATE TABLE covid_19_india (
-Sno SERIAL PRIMARY KEY,
-Date DATE NOT NULL,
-Time TIME NOT NULL,
-State TEXT,
-ConfirmedIndianNational INT,
-ConfirmedForeignNational INT,
-Cured INT,
-Deaths INT,
-Confirmed INT );
+## Table Creation
 
-- CREATE TABLE covid_vaccine_statewise (
-Updated_On	Date Not null,
-State	text,
-Total_Doses_Administered int,
-Sessions int,
-Sites int,
-First_Dose_Administered int,
-Second_Dose_Administered int,
-Male_Doses_Administered	int,
-Female_Doses_Administered int,
-Transgender_Doses_Administered int,
-Covaxin_Doses_Administered int,
-CoviShield_Doses_Administered int,
-Sputnik_V_Doses_Administered int,
-AEFI int,
-AgeGroup_18_44_Doses_Administered int,
-AgeGroup_45_60_Doses_Administered int,
-AgeGroup_60plus_Doses_Administered int,
-AgeGroup_18_44_Individuals_Vaccinated int,
-AgeGroup_45_60_Individuals_Vaccinated int,
-AgeGroup_60plus_Individuals_Vaccinated int,
-Male_Individuals_Vaccinated int,
-Female_Individuals_Vaccinated int,
-Transgender_Individuals_Vaccinated int,
-Total_Individuals_Vaccinated int );
+- **covid_19_india Table**:
+  ```sql
+  CREATE TABLE covid_19_india (
+      Sno SERIAL PRIMARY KEY,
+      Date DATE NOT NULL,
+      Time TIME NOT NULL,
+      State TEXT,
+      ConfirmedIndianNational INT,
+      ConfirmedForeignNational INT,
+      Cured INT,
+      Deaths INT,
+      Confirmed INT
+  );
+covid_vaccine_statewise Table:
+CREATE TABLE covid_vaccine_statewise (
+    Updated_On DATE NOT NULL,
+    State TEXT,
+    Total_Doses_Administered INT,
+    Sessions INT,
+    Sites INT,
+    First_Dose_Administered INT,
+    Second_Dose_Administered INT,
+    Male_Doses_Administered INT,
+    Female_Doses_Administered INT,
+    Transgender_Doses_Administered INT,
+    Covaxin_Doses_Administered INT,
+    CoviShield_Doses_Administered INT,
+    Sputnik_V_Doses_Administered INT,
+    AEFI INT,
+    AgeGroup_18_44_Doses_Administered INT,
+    AgeGroup_45_60_Doses_Administered INT,
+    AgeGroup_60plus_Doses_Administered INT,
+    AgeGroup_18_44_Individuals_Vaccinated INT,
+    AgeGroup_45_60_Individuals_Vaccinated INT,
+    AgeGroup_60plus_Individuals_Vaccinated INT,
+    Male_Individuals_Vaccinated INT,
+    Female_Individuals_Vaccinated INT,
+    Transgender_Individuals_Vaccinated INT,
+    Total_Individuals_Vaccinated INT
+);
+StatewiseTestingDetails Table:
+CREATE TABLE StatewiseTestingDetails (
+    Date DATE NOT NULL,
+    State TEXT,
+    TotalSamples INT,
+    Negative INT,
+    Positive INT
+);
 
-- Create table StatewiseTestingDetails(
-Date Date  Not null,
-State Text,
-TotalSamples int,
-Negative int,
-Positive int );
+# Null Value Handling
+To handle NULL values in integer columns for the covid_vaccine_statewise and StatewiseTestingDetails tables, the following SQL UPDATE queries were executed:
 
-## Updated NULL values to 0 in integer columns for the covid_vaccine_statewise and  table:
 UPDATE covid_vaccine_statewise
 SET
     Total_Doses_Administered = COALESCE(Total_Doses_Administered, 0),
@@ -62,6 +71,8 @@ SET
     AgeGroup_18_44_Doses_Administered = COALESCE(AgeGroup_18_44_Doses_Administered, 0),
     AgeGroup_45_60_Doses_Administered = COALESCE(AgeGroup_45_60_Doses_Administered, 0),
     AgeGroup_60plus_Doses_Administered = COALESCE(AgeGroup_60plus_Doses_Administered, 0),
+
+
     AgeGroup_18_44_Individuals_Vaccinated = COALESCE(AgeGroup_18_44_Individuals_Vaccinated, 0),
     AgeGroup_45_60_Individuals_Vaccinated = COALESCE(AgeGroup_45_60_Individuals_Vaccinated, 0),
     AgeGroup_60plus_Individuals_Vaccinated = COALESCE(AgeGroup_60plus_Individuals_Vaccinated, 0),
@@ -70,111 +81,10 @@ SET
     Transgender_Individuals_Vaccinated = COALESCE(Transgender_Individuals_Vaccinated, 0),
     Total_Individuals_Vaccinated = COALESCE(Total_Individuals_Vaccinated, 0);
 
-## For table  StatewiseTestingDetails
+# For table  StatewiseTestingDetails
 UPDATE StatewiseTestingDetails
 SET
     TotalSamples = COALESCE(TotalSamples, 0),
     Negative = COALESCE(Negative, 0),
     Positive = COALESCE(Positive, 0);
-
-# Removing duplicates from table if any.
-DELETE FROM statewisetestingdetails
-WHERE (date, state, totalsamples, negative, positive) IN (
-    SELECT date, state, totalsamples, negative, positive
-    FROM statewisetestingdetails
-    GROUP BY date, state, totalsamples, negative, positive
-    HAVING COUNT(*) > 1); #Two rows were same as they were duplicate
-So, removed duplicate from table statewisetestingdetails: 
-DELETE FROM statewisetestingdetails
-WHERE (date, state, totalsamples, negative, positive) IN (
-    SELECT date, state, totalsamples, negative, positive
-    FROM statewisetestingdetails
-    GROUP BY date, state, totalsamples, negative, positive
-    HAVING COUNT(*) > 1);
-
-Data Cleaning Documentation: 
-For the tables, data cleaning was conducted. Duplicate records were identified based on multiple columns, and the DELETE query was used to remove them. Additionally, NULL values were replaced with 0 in columns where appropriate. The data format was validated, ensuring consistency and correctness across the dataset.
-
-# Exploratory Data Analysis (EDA) for our COVID-19 Dataset
-•	What is the total number of COVID-19 cases (confirmed and deaths) reported for the entire dataset?
--	SELECT  SUM(Confirmed) AS TotalConfirmed,
--	SUM(Deaths) AS TotalDeaths
--	FROM   covid_19_india;
-
-•	How many unique states are included in the COVID-19 cases dataset, and what are their names?
--	SELECT DISTINCT State AS UniqueStateCount
--	FROM (   SELECT State FROM covid_19_india
--	UNION
--	SELECT State FROM covid_vaccine_statewise
--	UNION
--	SELECT State FROM StatewiseTestingDetails
--	) AS CombinedStates;
-
-•	Calculate the total number of vaccine doses administered across all states.
-- SELECT State,
-SUM(Total_Doses_Administered) AS TotalDosesAdministered
-FROM covid_vaccine_statewise
-GROUP BY State;
-
-•	What is the percentage of individuals vaccinated in the age group 60 and above, on average, across all states? We use case because some rows has 0 in Total_Individuals_Vaccinated.
--	SELECT Round (AVG(
-CASE
-WHEN Total_Individuals_Vaccinated > 0 THEN AgeGroup_60plus_Individuals_Vaccinated * 100.0 / Total_Individuals_Vaccinated
- ELSE 0.0  -- Set to 0% if Total_Individuals_Vaccinated is 0
- END ),2 ) AS AveragePercentageVaccinated
-FROM covid_vaccine_statewise;
-
-
-
-
-What is the total number of vaccine doses administered in each state according to the covid_vaccine_statewise table, and how does this distribution vary across different states?
-SELECT SUM(Total_Doses_Administered) AS TotalVaccineDoses,
-State FROM
-covid_vaccine_statewise
-GROUP BY State;
-
-Calculate and visualize the distribution of vaccination sessions across states. Are there any outliers or unusual patterns?
-SELECT State,
-sum(Sessions) AS VaccinationSessions
-FROM covid_vaccine_statewise
-group by state ;
-
-Determine the state with the highest and lowest vaccine coverage in terms of the percentage of individuals vaccinated in the age group 18-44.
-WITH VaccinePercentages AS (
-SELECT State, ROUND(
-SUM(AgeGroup_18_44_Individuals_Vaccinated) * 100.0 /
-SUM(Total_Individuals_Vaccinated)
-) AS PercentageVaccinated_18_44 FROM
-covid_vaccine_statewise
-GROUP BY State )
-SELECT State, PercentageVaccinated_18_44
-FROM ( SELECT State, PercentageVaccinated_18_44,
-RANK() OVER (ORDER BY PercentageVaccinated_18_44 DESC) AS HighRank,
-RANK() OVER (ORDER BY PercentageVaccinated_18_44 ASC) AS LowRank
-FROM VaccinePercentages ) AS RankedPercentages
-WHERE HighRank = 1 OR LowRank = 1;
-
-
-Calculate the case fatality rate (CFR) for each state. How does it vary across states, and has it changed over time?
-SELECT State, SUM(CFR) AS TotalCFR
-FROM ( SELECT State, Date, (Deaths * 100.0 / Confirmed) AS CFR
-FROM covid_19_india
-WHERE Deaths IS NOT NULL
-AND Confirmed > 0 ) AS CFRData
-GROUP BY State
-ORDER BY State;
-
-Investigate the impact of gender on vaccination rates. Are there significant differences between male, female, and transgender individuals' vaccination rates?
-SELECT 'Male' AS Gender,
-SUM(Male_Individuals_Vaccinated) AS TotalVaccinated,
-SUM(Male_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate
-FROM covid_vaccine_statewise
-UNION
-SELECT 'Female' AS Gender,
-SUM(Female_Individuals_Vaccinated) AS TotalVaccinated,
-SUM(Female_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate FROM covid_vaccine_statewise
-UNION
-SELECT 'Transgender' AS Gender,
-SUM(Transgender_Individuals_Vaccinated) AS TotalVaccinated,
-SUM(Transgender_Individuals_Vaccinated) * 100.0 / SUM(Total_Individuals_Vaccinated) AS VaccinationRate FROM covid_vaccine_statewise;
 
