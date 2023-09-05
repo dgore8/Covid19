@@ -71,8 +71,6 @@ SET
     AgeGroup_18_44_Doses_Administered = COALESCE(AgeGroup_18_44_Doses_Administered, 0),
     AgeGroup_45_60_Doses_Administered = COALESCE(AgeGroup_45_60_Doses_Administered, 0),
     AgeGroup_60plus_Doses_Administered = COALESCE(AgeGroup_60plus_Doses_Administered, 0),
-
-
     AgeGroup_18_44_Individuals_Vaccinated = COALESCE(AgeGroup_18_44_Individuals_Vaccinated, 0),
     AgeGroup_45_60_Individuals_Vaccinated = COALESCE(AgeGroup_45_60_Individuals_Vaccinated, 0),
     AgeGroup_60plus_Individuals_Vaccinated = COALESCE(AgeGroup_60plus_Individuals_Vaccinated, 0),
@@ -87,4 +85,25 @@ SET
     TotalSamples = COALESCE(TotalSamples, 0),
     Negative = COALESCE(Negative, 0),
     Positive = COALESCE(Positive, 0);
+
+# Duplicate Record Removal
+Duplicate records were identified in the StatewiseTestingDetails table and removed using the following SQL query:
+
+SELECT date, state, totalsamples, negative, positive
+FROM StatewiseTestingDetails
+GROUP BY date, state, totalsamples, negative, positive
+HAVING COUNT(*) > 1;
+
+So to remove records :
+
+DELETE FROM statewisetestingdetails
+WHERE (date, state, totalsamples, negative, positive) IN (
+SELECT date, state, totalsamples, negative, positive 
+FROM statewisetestingdetails
+GROUP BY date, state, totalsamples, negative, positive
+HAVING COUNT(*) > 1); #Two rows were same as they were duplicate
+
+## Data Cleaning Documentation: 
+For the tables, data cleaning was conducted. Duplicate records were identified based on multiple columns, and the DELETE query was used to remove them. Additionally, NULL values were replaced with 0 in columns where appropriate. The data format was validated, ensuring consistency and correctness across the dataset.
+
 
